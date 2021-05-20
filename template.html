@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>template</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <style>
+        #div1 {
+            background-color: aqua;
+            border:solid 1px rgb(87, 73, 73);
+            width: 250px;
+            height: 50px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- 通过 v-once指令，数据只能一次性的插入，当数据再改变时，插值处的内容不会更新 -->
+        <p v-once>Message: {{ msg }}</p>
+        <button v-on:click="msg = '你好，世界!'">改变msg</button>
+        <br>
+
+        <!-- 
+            {{}} 里面的内容会被解析成普通文本，而非 HTML 代码，
+            为了输出真正的 HTML，需要使用 v-html 指令，
+            注意： v-html 不会解析值中的数据绑定
+        -->
+        <p>解析 html 标签：<span v-html="rawHtml"></span></p>
+
+        <!-- 
+            {{}} 不能作用于元素属性，元素属性用 v-bind 指令绑定。
+        -->
+        <div v-bind:id="dynamicId"></div>
+
+        <!--
+            Vue 支持使用 JavaScript 表达式，
+            只支持单表达式，不支持下面的例子：
+            {{ var a = 1 }} 这是语句，不是表达式，
+            {{ if (ok) { return message } }} 流控制也不会生效，请使用三元表达式
+        -->
+        <p>使用 JavaScript 表达式 num + 1: {{ num + 1}}</p>
+        <p>使用 JavaScript 表达式 { ok ? 'yes' : 'no'}: {{ ok ? 'yes' : 'no'}}</p>
+        <p>使用 JavaScript 表达式反转 msg（hello, world!）: {{  msg.split('').reverse().join('') }} </p>
+        <div v-bind:id="'div' + id">绑定属性时使用表达式 v-bind:id="'list-' + id"</div>
+    </div>
+    <script>
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                msg: 'hello, world!',
+                text: {
+                    c: 1
+                },
+                rawHtml: '<span style="color: red">这里应该时红色 {{ msg }}</span>',
+                dynamicId: 'div1',
+                num: 1,
+                ok: true,
+                id: 1
+            },
+            watch: {
+                msg(newValue, oldValue) {
+                    console.log("msg: " + newValue, oldValue)
+                },
+                text:{
+                    // 深度监听，可以监听到对象、数组的变化
+                    handler(newValue, oldValue) {
+                        console.log('b.c: ' + newValue.c, oldValue.c)
+                    },
+                    deep: true // 深度监听
+                }
+            }
+        })
+
+        // 改变 text.c 的值，看是否能监听到
+        app.text.c = 3
+
+
+    </script>
+</body>
+
+</html>

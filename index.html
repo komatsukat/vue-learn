@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>index</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+
+<body>
+    <div id="app">
+        {{ message }}
+        <button v-on:click="reverseMessage">反转消息</button>
+        <br>
+        <!-- v- 开头的都是 vue 的指令 -->
+        <!-- v-bind 可以将元素属性和 Vue 的 property 绑定-->
+        <span v-bind:title="title">鼠标悬停几秒钟查看此处动态绑定的提示信息！</span><br>
+        <span v-if="seen">能看到我么？</span>
+
+        <ol>
+            <li v-for="todo in todos">
+                {{ todo.text }}
+            </li>
+        </ol>
+        <br>
+        <!-- 通过 v-model 将表单输入和应用状态进行双向绑定 -->
+        <input v-model="message">
+    </div>
+</body>
+<script>
+    /*
+    一个 Vue 应用会将其挂载到 DOM 元素上（这里是 #app），然后对其进行完全控制，
+    该 HTML 是我们的入口，其余都会发生在我们创建的 Vue 实例内部。
+    */
+    var app = new Vue({
+        el: '#app', // 数据就能和 DOM 关联了，所有东西都是响应式的。
+        data: {
+            message: 'hello, world!',
+            title: '页面加载于' + new Date().toLocaleString(),
+            seen: false,
+            todos: [
+                { text: 'java script' },
+                { text: 'php' },
+                { text: 'C++' }
+            ]
+        },
+        methods: {
+            reverseMessage: function() {
+                /*
+                所有的过程，我们都没有触碰dom，所有的dom操作都由vue来处理，我们只需要关注逻辑层面即可。
+                */
+                this.message = this.message.split('').reverse().join('')
+            }
+        }
+    })
+</script>
+
+</html>

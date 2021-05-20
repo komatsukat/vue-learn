@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+<body>
+    <div id="app">
+        <p v-if="seen">能看到我么？</p>
+        <p>
+            <!-- href 是参数，告知 v-bind 指令，将 a 元素的 href 属性与表达式 url 的值绑定 -->
+            <a v-bind:href="url">我是超链接</a> <br>
+            <!-- v-on 用于监听 DOM 事件，参数是监听的事件名 -->
+            <a v-on:click="showLog">点我触发事件</a> <br>
+
+            <!-- 
+                注意：动态参数绑定时，浏览器会把大写强制转为小些，
+                如浏览器会把 dynamicAttr 转为 dynamicattr，导致在 data 中找不到对应 property
+             -->
+            <!-- 绑定动态属性，用 [] 括起来，这里的动态属性会作为一个表达式求值 -->
+            <a v-bind:[dynamicattr]="url">动态参数</a><br>
+            <!-- 动态绑定事件，支持表达式 -->
+            <a v-on:[dynamicclick]='showLog'>点击事件动态参数</a><br>
+
+            <!-- 修饰符，以 . 指明的特殊后缀符，用于指出一个指令应该以特殊方式绑定 -->
+            <!-- 
+                prevent 是阻止的意思，.prevent 就是阻止元素发生默认的行为，如：
+                1. 当点击提交按钮时阻止对表单对提交
+                2. 阻止 <a/> 中的 href 跳转
+                和 jQuery 中的 event.perventDefault() 效果一样：
+                    $("a").click(function(event){
+                        event.preventDefault();
+                    });
+             -->
+            <a v-on:submit.prevent='onSubmit'>修饰符</a><br>
+
+            <!-- 
+                对 v-bind 提供了缩写：v-bind:href -> :href ,
+                对 v-on 提供了缩写：v-on:click -> @click
+            -->
+            <a :href="url">缩写v-bind</a><br>
+            <a @click="showLog">缩写v-on</a><br>
+            <a :[dynamicattr]="url">v-bind动态参数缩写</a><br>
+            <a @[dynamicclick]="showLog">v-on动态参数缩写</a><br>
+        </p>
+    </div>
+    <script>
+        /**
+         *  指令都是 v- 开头，作用于 DOM 元素属性
+         */
+        var app = new Vue({
+            el: '#app',
+            data: {
+                seen: true,
+                url: 'https://www.baidu.com/img/flexible/logo/pc/result@2.png',
+                dynamicattr: 'href',
+                dynamicclick: 'click'
+            },
+            methods: {
+                showLog () {
+                    alert('你好')
+                },
+                onSubmit() {
+                    alert('修饰符')
+                }
+            }
+        })
+    </script>
+</body>
+</html>

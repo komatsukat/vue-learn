@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>data</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+<body>
+    <div id="app">
+        <p>{{ a }}</p>
+        <button v-on:click="a = 'd'">change it</button>
+        <br>
+        {{ b }}
+    </div>
+    <script>
+        var data = {
+            a: 'a'
+        }
+
+        /**
+         * 对 data 进行冻结，之后所有对 data 的修改都不会生效
+         */
+        // Object.freeze(data)
+
+        /**
+         *  Vue 实例化创建时要先经过一系列初始化，如设置 数据监听、编译模版、
+         *  将实例挂载到 DOM 并在数据变化时更新 DOM 等。
+         *  同时在这个过程中会运行一些叫 生命周期钩子 的函数，
+         *  这给力开发人员在不同阶段添加代码的机会。
+         *  如 created 钩子可以用来在一个实例被创建之后执行的代码。
+         * 
+         *  不要在选项 property 或回调上使用箭头函数，
+         *  比如 created: () => console.log(this.a) 
+         *  或 vm.$watch('a', newValue => this.myMethod())。
+         *  因为箭头函数并没有 this，this 会作为变量一直向上级词法作用域查找，直至找到为止，
+         *  经常导致 Uncaught TypeError: ...
+         *  
+         */
+
+         /**
+          * render function 渲染函数
+          * patch 补丁，修补
+          */
+        var app = new Vue({
+            el: '#app', // el 是 element 的缩写
+            data: data,
+            created: function() {
+                // this 指向 app
+                console.log('a is: ' + this.a)
+            }
+        })
+
+        /**
+         *  Vue 实例创建时，会将 data 中的所有 property 加入到 Vue 的响应式系统中，
+         *  当这些 property 的值发生改变时，视图将会产生“响应”，即匹配最新的值。
+         *  
+         *  因为这些值在 Vue 实例创建时，就会加入到 Vue 的响应式系统，
+         *  所以通过 Vue 实例和 data 都可以引用这些值。
+         */
+        console.log(data.a == app.a) 
+
+        data.a = 'b'
+        console.log(app.a)
+
+        app.a = 'c'
+        console.log(data.a)
+
+        /**
+         *  只有 Vue 实例创建时就已经存在的于 data 中的 property 才是响应式的，
+         *  如果想要晚些时候才需要这个 property，那么就先在 data 预定义并设置一些初始值即可。
+         */
+        data.b = '1' // 非响应式
+
+        
+        /**
+         *  通过前缀 $ 的方式，才能引用到用户定义的 data
+         *  或者说，可以通过 $ 前缀可以使用注册到 Vue 实例上的方法或者 property。
+         */
+        console.log(JSON.stringify(app.data)) // undefined
+        console.log(JSON.stringify(app.$data)) // {"a":"c","b":"1"}
+        console.log(app.$data === data) // true
+        console.log(app.data === data) // false
+        console.log(app.$el === document.getElementById('app')) // true，两种方式获取的 dom 都是同一个
+
+        /**
+         *  监听 vm.a 的改变，
+         *  注意：vm.a 在该代码之前的值改变都不会监听到，在该代码后，执行改变 vm.a 的值才会被监听到
+         */
+        app.$watch('a', function(newVlue, oldValue){
+            // 这个回调将在 vm.a 改变后回调
+            alert(oldValue + '------' + newVlue)
+        })
+    </script>
+</body>
+</html>
