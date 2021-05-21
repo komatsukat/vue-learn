@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>for</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+
+<body>
+    <!--
+        我们可以用 v-for 指令基于一个数组来渲染一个列表。
+        v-for 指令需要使用 item in items 形式的特殊语法，
+        其中 items 是源数据数组，而 item 则是被迭代的数组元素的别名。
+    -->
+    <ol id="example-1">
+        <li v-for="item in items" :key="item.messsage">
+            {{ item.message }}
+        </li>
+    </ol>
+    <script>
+        var example1 = new Vue({
+            el: '#example-1',
+            data: {
+                items: [
+                    { message: 'Foo' },
+                    { message: 'bar' }
+                ]
+            }
+        })
+    </script>
+    <hr>
+
+    <!--
+        v-for 块中，我们可以访问所有父作用域的 property。v-for 还支持一个可选的第二个参数，即当前项的索引，从0开始。
+        下面例子中，parentMessage 是 li 父作用域的 property。
+
+        可以用 of 代替 in 
+    -->
+    <ul id="example-2">
+        <li v-for="(item, index) of items">
+            {{ parentMessage }} - {{ index }} -- {{ item.message }}
+        </li>
+    </ul>
+    <script>
+        var example2 = new Vue({
+            el: '#example-2',
+            data: {
+                parentMessage: 'Parent',
+                items: [
+                    { message: 'Foo' },
+                    { message: 'bar' }
+                ]
+            }
+        })
+    </script>
+    <hr>
+
+    <!--
+        在 v-for 中使用对象。及状态维护 key。
+        在遍历对象时，会按 Object.keys() 的结果遍历，但是不能保证它的结果在不同的 JavaScript 引擎下都一致。
+    -->
+    <ul id="example-3">
+        <li v-for="value in object">
+            {{ value }}
+        </li>
+        --------
+        <!-- 使用第二个属性输入对象的属性名 -->
+        <li v-for="(value, name) in object">
+            {{ name }} -- {{ value }}
+        </li>
+        --------
+        <!-- 使用第三个属性作为索引 -->
+        <li v-for="(value, name, index) in object">
+            {{ index }} -- {{ name }} -- {{ value }}
+        </li>
+        --------
+        <!-- 
+            当 Vue 正在更新使用 v-for 渲染的元素列表时，它默认使用“就地更新”的策略。
+            如果数据项的顺序被改变，Vue 将不会移动 DOM 元素来匹配数据项的顺序，而是就地更新每个元素，
+            并且确保它们在每个索引位置正确渲染。  
+            (如果 li 中数据顺序改变时，Vue 不是通过移动 li 本身调整顺序，而是更新每个 li 中的内容，从而调整到最新顺序)
+
+            这个默认的模式是高效的，但是只适用于不依赖子组件状态或临时 DOM 状态 (例如：表单输入值) 的列表渲染输出。
+
+            为了给 Vue 一个提示，以便它能跟踪每个节点的身份，从而重用和重新排序现有元素，
+            你需要为每项提供一个唯一 key attribute。
+
+            建议尽可能在使用 v-for 时提供 key attribute，除非遍历输出的 DOM 内容非常简单，
+            或者是刻意依赖默认行为以获取性能上的提升。
+
+            不要使用对象或数组之类的非基本类型值作为 v-for 的 key。请用字符串或数值类型的值。
+        -->
+        <li v-for="(value, name, index) in object" v-bind:key="name">
+            {{ index }} -- {{ name }} -- {{ value }}
+        </li>
+    </ul>
+    <script>
+        var example3 = new Vue({
+            el: '#example-3',
+            data: {
+                object: {
+                    title: 'How to do lists in Vue',
+                    author: 'Jane Doe',
+                    publishedAt: '2016-04-10'
+                }
+            }
+        })
+    </script>
+    <hr>
+
+    <!--
+        数组更新:
+        变更方法：变更方法不改变原来的数组
+            push() - 向数组中添加元素
+            pop() - 删除数组中元素
+            shift() - 删除数组第一个元素，并返回
+            unshift() - 向数组头部添加一个或多个元素，并返回长度
+            splice() - 可删除从 index 处开始的零个或多个元素，并且用参数列表中声明的一个或多个值来替换那些被删除的值
+            sort() - 排序
+            reverse() - 反转
+        
+        替换方法：会返回一个新数组
+        如：filter()、concat() 和 slice()
+        你可能认为这将导致 Vue 丢弃现有 DOM 并重新渲染整个列表。
+        幸运的是，事实并非如此。Vue 为了使得 DOM 元素得到最大范围的重用而实现了一些智能的启发式方法，
+        所以用一个含有相同元素的数组去替换原来的数组是非常高效的操作。
+
+        由于 JavaScript 的限制，Vue 不能检测数组和对象的变化
+    -->
+    <div id="example-4">
+        <uL>
+            <li v-for="(item, index) in items" :key="item.message">
+                {{ item.message }}
+            </li>
+        </uL>
+        <input type="text" v-model="itemValue" placeholder="输入任意值">
+        <button v-on:click="pushItems">添加</button>
+        <button v-on:click="popItems">删除</button>
+        <button v-on:click="shiftItems">删除数组第一个元素，并返回</button>
+        <button v-on:click="unshiftItems">向数组头部添加一个或多个元素，并返回长度</button>
+        <button v-on:click="spliceItems">删除指定位置元素，并替换成新元素</button>
+        <button v-on:click="filterItems">过滤</button>
+    </div>
+    <script>
+        var example4 = new Vue({
+            el: '#example-4',
+            data: {
+                itemValue: '',
+                items: [
+                    { message: 'Foo' },
+                    { message: 'Bar' }
+                ]
+            },
+            methods: {
+                pushItems: function () {
+                    this.items.push({ message: this.itemValue })
+                    this.itemValue = ''
+                },
+                popItems: function () {
+                    this.items.pop() // 从尾到头，每次删除一个元素
+                },
+                shiftItems: function () {
+                    alert(this.items.shift().message)
+                },
+                unshiftItems: function () {
+                    alert(this.items.unshift({ message: 'A' }, { message: 'B' }))
+                },
+                spliceItems: function () {
+                    // 从数组下标为 1 位置开始删除，删除一个元素，返回删除项，被删除的位置用参数列表中的元素代替
+                    alert(this.items.splice(1, 1, { message: 'C' }).length)
+                },
+                filterItems: function () {
+                    // 对 items 数组进行过滤，返回匹配到 Foo 元素的新数组
+                    this.items = this.items.filter(function (item) {
+                        return item.message.match(/Foo/)
+                    })
+                }
+
+            }
+        })
+    </script>
+    <hr>
+
+    <!--
+        显示过滤/排序后的结果
+       
+        有时，我们想要显示一个数组经过过滤或排序后的版本，而不实际变更或重置原始数据。
+        在这种情况下，可以创建一个计算属性，来返回过滤或排序后的数组。
+    -->
+    <div id="example-5">
+        <ul>
+            <li v-for="num in numbers">
+                {{ num }}
+            </li>
+            --------
+            <li v-for="num in evenNumbers">
+                {{ num }}
+            </li>
+        </ul>
+        --------
+        <ul v-for="set in sets">
+            <li v-for="n in even(set)">
+                {{ n }}
+            </li>
+        </ul>
+        --------
+        <!-- v-for 也可以接受整数。在这种情况下，它会把模板重复对应次数 -->
+        <div>
+            <span v-for="n in 10">{{ n }}</span>
+        </div>
+        --------
+        <!--可以利用带有 v-for 的 <template> 来循环渲染一段包含多个元素的内容-->
+        <ul>
+            <template v-for="item in items">
+                <li>{{ item }}</li>
+                <li role="presentation"></li>
+            </template>
+        </ul>
+    </div>
+    <script>
+        var example5 = new Vue({
+            el: '#example-5',
+            data: {
+                items: [
+                    '选项一', '选项二', '选项三'
+                ],
+                numbers: [
+                    1, 2, 3, 4, 5, 6
+                ],
+                sets: [
+                    [1, 2, 3, 4, 5],
+                    [6, 7, 8, 9, 10]
+                ]
+            },
+            methods: {
+                even: function (set) {
+                    return set.filter(function (n) {
+                        return n % 2 === 0
+                    })
+                }
+            },
+            computed: {
+                evenNumbers: function () {
+                    // 返回能被 2 整除的元素的新数组，不改变原来的数组
+                    return this.numbers.filter(function (num) {
+                        return num % 2 === 0
+                    })
+                }
+            }
+        })
+    </script>
+    <br>
+
+    <!--
+        注意我们不推荐在同一元素上使用 v-if 和 v-for。
+    -->
+    <div id="example-6">
+        <ul>
+            <!--
+                当它们处于同一节点，v-for 的优先级比 v-if 更高，这意味着 v-if 将分别重复运行于每个 v-for 循环中。
+                当你只想为部分项渲染节点时，这种优先级的机制会十分有用。
+            -->
+            <li v-for="todo in todos" v-if="!todo.isComplete">
+                {{ todo }}
+            </li>
+        </ul>
+        --------
+        <!--
+            如果是有条件的跳过循环，那么可以将 v-if 置于外层元素上。
+        -->
+        <template v-if="todos.length">
+            <ul>
+                <li v-for="todo in todos">
+                    {{ todo }}
+                </li>
+            </ul>
+        </template>
+    </div>
+    <script>
+        var example6 = new Vue({
+            el: '#example-6',
+            data: {
+                todos: [
+                    { isComplete: true },
+                    { isComplete: false }
+                ]
+            }
+        })
+    </script>
+    <br>
+
+
+    <!--
+        在自定义组件上使用 v-for
+        可以像在任何普通元素上一样使用 v-for
+    -->
+    <div id="example-7">
+        <ul>
+            <my-component v-for="(item, index) in items" v-bind:item="item" v-bind:index="index" v-bind:key="item.id">
+            </my-component>
+        </ul>
+    </div>
+    <script>
+        /**
+         *  任何数据都不会自动传递到组件里，因为组件有自己独立的作用域，为了把迭代数据传到组件里，要用props。
+         *  不自动将 item 注入到组件里的原因是，这会使得组件与 v-for 的运作紧密耦合。
+         *  明确组件数据的来源能够使组件在其他场合重复使用。
+         */
+        Vue.component('my-component', {
+            props: ['item'],
+            template: '<li>{{ item.name }}</li>'
+        })
+
+        var example7 = new Vue({
+            el: '#example-7',
+            data: {
+                items: [
+                    { id: 1, name: '张三' },
+                    { id: 2, name: '李四' }
+                ]
+            }
+        })
+    </script>
+    <hr>
+
+    <!--
+        2.2.0+ 的版本里，当在组件上使用 v-for 时，key 现在是必须的。
+    -->
+    <div id="todo-list-example">
+        <form v-on:submit.prevent="addNewTodo">
+            <label>添加一个 todo</label>
+            <input v-model="newTodoText" id="new-todo" placeholder="喂猫">
+            <button>Add</button>
+        </form>
+        <ul>
+            <!--
+                注意这里的 is="todo-item" attribute。这种做法在使用 DOM 模板时是十分必要的，
+                因为在 <ul> 元素内只有 <li> 元素会被看作有效内容。
+                这样做实现的效果与 <todo-item> 相同，但是可以避开一些潜在的浏览器解析错误。
+            -->
+            <li is="todo-item" v-for="(todo, index) in todos" v-bind:key="todo.id" v-bind:title="todo.title"
+                v-on:remove="todos.splice(index, 1)">
+            </li>
+        </ul>
+    </div>
+    <script>
+        Vue.component('todo-item', {
+            props: ['title'],
+            /**
+             * vm.$emit( eventName, […args] )
+                参数：
+                {string} eventName
+                [...args]
+                触发当前实例上的事件。附加参数都会传给监听器回调。
+                用途：
+                1.父组件可以使用 props 把数据传给子组件。
+                2.子组件可以使用 $emit 触发父组件的自定义事件。
+             */
+            template: '\
+                <li>\
+                    {{ title }}\
+                    <button v-on:click="$emit(\'remove\')">remove</button>\
+                </li>\
+            '
+        })
+        new Vue({
+            el: "#todo-list-example",
+            data: {
+                newTodoText: '',
+                todos: [
+                    {
+                        id: 1,
+                        title: 'Do the dishes',
+                    },
+                    {
+                        id: 2,
+                        title: 'Take out the trash',
+                    },
+                    {
+                        id: 3,
+                        title: 'Mow the lawn'
+                    }
+                ]
+            },
+            methods: {
+                addNewTodo: function () {
+                    this.todos.push({ id: this.todos.length++, title: this.newTodoText })
+                    this.newTodoText = ''
+                }
+            }
+        })
+    </script>
+</body>
+
+</html>

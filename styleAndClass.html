@@ -1,11 +1,172 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Document</title>
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 </head>
+
 <body>
-    
+    <div id="app">
+        <!--
+            active 这个 class 存在与否取决于数据 property 的 isActive，
+            可以在对象中传入更多字段来动态切换多个 class，如 'text-danger'
+            v-bind:class 可以和普通的 class 共存，
+            当 hasError 为 true时，该 div 的属性变成：class="static active text-danger"，
+            我们看到，class 属性对应的值是一个对象时：{className: isActive, 'a': false}，
+            不能是 {className, 'a'}这样子，因为 Vue 会不知道是否启用这个 Class，从而不会有响应。
+            或者数组 [classObj]，classObj 必须在 Vue property 中定义
+        -->
+        <div class="static" v-bind:class="{ active: isActive, 'text-danger': hasError }">
+            hello
+        </div>
+
+        <!--
+            绑定的对象不必内敛在定义的模板中，可以定义在 data 中
+        -->
+        <div class="static" v-bind:class="classObject">
+            world!
+        </div>
+
+        <!--
+            也可以绑定计算属性，非常常用且强大的模式
+        -->
+        <div class="static" :class="cls">
+            你好
+        </div>
+
+        <!-- 把一个数组传给 v-bind:class，以应用一个 class 列表  -->
+        <div class="static" :class="[activeClass, errorClass]">
+            世界
+        </div>
+        <!-- 使用计算属性返回数组 -->
+        <div class="static" :class="clsArr">
+            我的
+        </div>
+
+        <!-- 使用表达式，三元符 -->
+        <div class="static" :class="[isActive ? activeClass : '',errorClass]">
+            hello
+        </div>
+        <!-- 代替繁琐的三元符 -->
+        <div class="static" :class="[{active: isActive}, errorClass]">
+            world
+        </div>
+
+        <!-- 
+            用在组件上。
+            当在一个自定义组件上使用 class property 时，这些 class 将被添加到该组件的根元素上面。
+            这个元素上已经存在的 class 不会被覆盖。
+        -->
+        <my-component class="baz boo"></my-component>
+        <!--
+            对于带数据绑定的也一样，
+        -->
+        <my-component :class="{bay: isActive, 'baz': isActive, boo: isActive}"></my-component>
+
+
+        <!--
+            绑定内联样式 style 
+            {} 中的语法不是 css，是一个 java script 对象，所以可以用驼峰或者短横线分割。
+        -->
+        <div :style="{ color: activeColor, fontSize: fontSize + 'px' }">
+            More Fish
+        </div>
+        <!-- 也可以直接绑定一个样式对象，这样更好些 -->
+        <div :style="styleObject">little cat</div>
+        <!-- 对象语法常常结合返回对象的计算属性结合使用 -->
+        <div :style="styleComputed">big pig</div>
+        <!--
+            从 2.3.0 起你可以为 style 绑定中的 property 提供一个包含多个值的数组，常用于提供多个带前缀的值,
+            这样写只会渲染数组中最后一个被浏览器支持的值。
+            在本例中，如果浏览器支持不带浏览器前缀的 flexbox，那么就只会渲染 display: flex。
+        -->
+        <div :style="{ display: ['-webkit-box', '-ms-flexbox', 'flex'], fontSize: '30px'}">eggs</div>
+    </div>
+    <script>
+        Vue.component('my-component', {
+            //props: []
+            template: '<p class="foo bar">Hi</p>'
+        })
+
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                styleObject: {
+                    color: 'blue',
+                    fontSize: '40px'
+                },
+                activeColor: 'red',
+                fontSize: 30,
+                isActive: true,
+                hasError: false,
+                error: null,
+                classObject: {
+                    active: true,
+                    'text-danger': true
+                },
+                activeClass: 'active',
+                errorClass: 'text-danger'
+            },
+            computed: {
+                cls: function () {
+                    return {
+                        active: this.isActive,
+                        'text-danger': this.error && this.error.type === 'fatal'
+                    }
+                },
+                clsArr: function () {
+                    return [this.activeClass, this.errorClass]
+                },
+                styleComputed: function() {
+                    return {
+                        color: 'green',
+                        fontSize: '50px'
+                    }
+                }
+            }
+        })
+    </script>
+    <style>
+        .bay {
+            width: 300px;
+        }
+
+        .baz {
+            background-color: rosybrown;
+        }
+
+        .boo {
+            font-weight: 600;
+        }
+
+        .foo {
+            color: red
+        }
+
+
+        .bar {
+            font-size: 30px;
+        }
+
+
+        .static {
+            width: 150px;
+            height: 50px;
+            margin-top: 10px;
+        }
+
+        .active {
+            background-color: blueviolet;
+        }
+
+        .text-danger {
+            color: chartreuse;
+            font-weight: 600;
+        }
+    </style>
 </body>
+
 </html>

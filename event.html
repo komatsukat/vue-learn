@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>event</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+
+<body>
+    <!--
+        v-on 监听 DOM 事件，并在触发时运行一些 JavaScript 代码
+    -->
+    <div id="example-1">
+        <button v-on:click="counter += 1">点击</button>
+        <p>点击次数： {{ counter }}</p>
+    </div>
+    <script>
+        new Vue({
+            el: "#example-1",
+            data: {
+                counter: 0
+            }
+        })
+    </script>
+
+    <!--
+        v-on 监听 DOM 事件，并在触发时运行一些 JavaScript 代码
+    -->
+    <div id="example-2">
+        <button v-on:click="greet">问候</button>
+        <!-- 内敛处理器中的方法 -->
+        <button v-on:click="say('Hi')">Say Hi</button>
+        <!--
+            需要在内联语句处理器中访问原始的 DOM 事件，可以用特殊变量 $event 把它传入方法
+        -->
+        <button v-on:click="warn('表单还不能提交', $event)">内联提交阻止</button>
+        <hr>
+        <!--
+            事件修饰符：
+            在事件处理程序中调用 event.preventDefault() 或 event.stopPropagation() 是非常常见的需求。
+            尽管我们可以在方法中轻松实现这点，但更好的方式是：方法只有纯粹的数据逻辑，而不是去处理 DOM 事件细节。
+            为了解决这个问题，Vue.js 为 v-on 提供了事件修饰符。之前提过，修饰符是由点开头的指令后缀来表示的。
+            .stop 阻止点击事件继续传播
+            .prevent 提交事件不再重载页面
+            .capture 
+            .self
+            .once
+            .passive
+        -->
+        <!-- 阻止单击事件继续传播，先调用点击事件方法，再跳转 -->
+        <a v-on:click.stop="doThis" href="http://wwww.baidu.com">点我</a>
+
+        <!-- 
+            提交事件不再重载页面，如果是 click 事件就阻止跳转，如果是 submit 事件就阻止提交
+            该方法将通知 Web 浏览器不要执行与事件关联的默认动作（如果存在这样的动作）
+        -->
+        <form v-on:submit.prevent="doThat">
+            <input type="text" placeholder="请输入电话">
+            <button>提交</button>
+        </form>
+
+        <!-- 修饰符可以串联 -->
+        <a v-on:click.stop.prevent="doThis" href="http://www.baidu.com">点点我</a>
+
+        <!-- 只有修饰符 -->
+        <form v-on:submit.prevent></form>
+
+
+        <!--
+            .capture事件修饰符的作用添加事件侦听器时使用事件捕获模式
+            即是给元素添加一个监听器，当元素发生冒泡时，先触发带有该修饰符的元素。
+            若有多个该修饰符，则由外而内触发。
+            就是谁有该事件修饰符，就先触发谁。
+        -->
+        <hr>
+        <div id="div1" v-on:click.capture="doc">
+            div1
+            <div id="div2" v-on:click.capture="doc">
+                div2
+                <div id="div3" v-on:click="doc">
+                    div3
+                    <div id="div4" v-on:click="doc">
+                        div4
+                        <!--
+                            点击obj4的时候，弹出的顺序为：obj1、obj2、obj4、obj3；
+                            由于1，2有修饰符，故而先触发事件，然后就是4本身触发，最后冒泡事件。
+                        -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--
+            使用修饰符时，顺序很重要；相应的代码会以同样的顺序产生。
+            因此，用 v-on:click.prevent.self 会阻止所有的点击，
+            而 v-on:click.self.prevent 只会阻止对元素自身的点击。
+        -->
+
+        <!-- 
+            只当在 event.target 是当前元素自身时触发处理函数
+            即事件不是从内部元素触发的
+         -->
+        <div id="div5" v-on:click.self="doc">
+            div5
+            <div id="div6" v-on:click.capture="doc">
+                div6
+            </div>
+        </div>
+
+        <!-- 点击事件将只会触发一次, .once 修饰符还能被用到自定义的组件事件上 -->
+        <a v-on:click.once="doThis" href="http://www.baidu.com">点我</a>
+
+        <!--
+            滚动事件的默认行为 (即滚动行为) 将会立即触发
+            而不会等待 `onScroll` 完成 
+            这其中包含 `event.preventDefault()` 的情况 
+            不要把 .passive 和 .prevent 一起使用，因为 .prevent 将会被忽略，
+            同时浏览器可能会向你展示一个警告。请记住，.passive 会告诉浏览器你不想阻止事件的默认行为。
+        -->
+        <div v-on:scroll.passive="onScroll" style="width: 100px; height: 40px; border: solid 1px red;">...</div>
+
+        <!--
+            按键修饰符
+            在监听键盘事件时，我们经常需要检查详细的按键。Vue 允许为 v-on 在监听键盘事件时添加按键修饰符：
+        -->
+        <input type="text" v-on:keyup.enter="submit" placeholder="enter健抬起">
+        <!--
+            可以直接将 KeyboardEvent.key 暴露的任意有效按键名转换为 kebab-case 来作为修饰符。
+            在下面示例中，处理函数只会在 $event.key 等于 PageDown 时被调用。
+            注意有 keyup 和 keydown 事件，无 key 事件
+        -->
+        <input v-on:keyup.page-down="pageDown" placeholder="按下 page-down 按钮">
+
+
+        <!--
+            按键码
+            keyCode 的事件用法已经被废弃了并可能不会被最新的浏览器支持。
+
+            使用 keyCode attribute 也是允许的：
+            <input v-on:keyup.13="submit">
+        -->
+
+        <!-- Alt + C -->
+        <input v-on:keyup.alt.67="clear" placeholder="按下 alt + c">
+        <div v-on:click.ctrl="ctrlClick">按下 click + ctrl</div>
+        <!--
+            请注意修饰键与常规按键不同，在和 keyup 事件一起用时，事件触发时修饰键必须处于按下状态。
+            换句话说，只有在按住 ctrl 的情况下释放其它按键，才能触发 keyup.ctrl。
+            而单单释放 ctrl 也不会触发事件。如果你想要这样的行为，请为 ctrl 换用 keyCode：keyup.17。
+        -->
+
+        <!-- 
+            .exact 修饰符
+            .exact 修饰符允许你控制由精确的系统修饰符组合触发的事件。
+        -->
+        <!-- 即使 Alt 或 Shift 被一同按下时也会触发 -->
+        <hr>
+        <button v-on:click.ctrl="onClick">A</button>
+
+        <!-- 有且只有 Ctrl 被按下的时候才触发 -->
+        <button v-on:click.ctrl.exact="onCtrlClick">A</button>
+
+        <!-- 没有任何系统修饰符被按下的时候才触发 -->
+        <button v-on:click.exact="onClick">A</button>
+
+        <!--
+            鼠标按钮修饰符:
+            .left
+            .right
+            .middle
+            这些修饰符会限制处理函数仅响应特定的鼠标按钮。
+        -->
+
+    </div>
+    <script>
+        var example2 = new Vue({
+            el: "#example-2",
+            data: {
+                name: 'Vue.js',
+                divId: ''
+            },
+            methods: {
+                onCtrlClick: function() {
+                    alert("ctrl only")  
+                },
+                onClick: function() {
+                    alert("ctrl")
+                },
+                ctrlClick: function () {
+                    alert("click + ctrl")
+                },
+                clear: function () {
+                    alert("alt + c")
+                },
+                pageDown: function () {
+                    console.log(event.key)
+                    alert("page down 了")
+                },
+                submit: function () {
+                    alert("enter 按键结束")
+                },
+                onScroll: function () {
+                    alert("立马触发滚动")
+                },
+                doc: function () {
+                    this.divId = event.currentTarget.id
+                    alert(this.divId)
+                },
+                doThat: function () {
+                    alert("表单要提交了")
+                },
+                doThis: function () {
+                    alert("点我，我先于跳转执行")
+                },
+                greet: function (event) {
+                    // event 是原生的 DOM 事件
+                    alert('hello ' + this.name + '!')
+                    if (event) {
+                        alert(event.target.tagName)
+                    }
+                },
+                say: function (message) {
+                    alert(message)
+                },
+                warn: function (message, event) {
+                    alert(message)
+                    if (event) {
+                        event.preventDefault()
+                        alert("我阻止表单提交了")
+                    }
+                }
+            }
+        })
+
+        // 也可以通过 js 方式直接调用方法
+        // example2.greet()
+    </script>
+
+
+
+</body>
+
+</html>
