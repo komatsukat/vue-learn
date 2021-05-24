@@ -18,38 +18,389 @@
 
         <oL>
             <!-- 将item传到自定义组件中，自定义组件（子组件）就可以使用父域中的值了 -->
-            <todo-item-2 
-            v-for="item in groceryList" 
-            v-bind:todo="item"  
-            v-bind:key="item.id">
+            <todo-item-2 v-for="item in groceryList" v-bind:todo="item" v-bind:key="item.id">
             </todo-item-2>
         </oL>
     </div>
-</body>
-<script>
-    /*
-     在 vue 中注册组件，一个组件本质上一个拥有预定义选项的一个 Vue 实例。
-    */
-    Vue.component('todo-item', {
-        template: '<li>代办项</li>'
-    })
+    <script>
 
-    Vue.component('todo-item-2', {
-        props: ['todo'], // 外部的数据在组件中使用，要先在 props 中引入
-        template: '<li>{{ todo.text }}</li>'
-    })
 
-    var app = new Vue({
-        el: '#app',
-        data: {
-            message: 'hello, world!',
-            groceryList: [
-                { id: 0, text: '蔬菜'},
-                { id: 1, text: '奶酪'},
-                { id: 2, text: '苹果'}
-            ]
+        /*
+         在 vue 中注册组件，一个组件本质上一个拥有预定义选项的一个 Vue 实例。
+        */
+        Vue.component('todo-item', {
+            template: '<li>代办项</li>'
+        })
+
+        Vue.component('todo-item-2', {
+            props: ['todo'], // 外部的数据在组件中使用，要先在 props 中引入
+            template: '<li>{{ todo.text }}</li>'
+        })
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                message: 'hello, world!',
+                groceryList: [
+                    { id: 0, text: '蔬菜' },
+                    { id: 1, text: '奶酪' },
+                    { id: 2, text: '苹果' }
+                ]
+            }
+        })
+    </script>
+    <hr>
+
+
+    <!--
+        因为组件是可复用的 Vue 实例，所以它们与 new Vue 接收相同的选项，
+        例如 data、computed、watch、methods 以及生命周期钩子等。
+        仅有的例外是像 el 这样根实例特有的选项。
+    -->
+    <div id="components-demo">
+        <!-- 注意当点击按钮时，每个组件都会各自独立维护它的 count。
+            因为你每用一次组件，就会有一个它的新实例被创建。 
+        -->
+        <button-counter></button-counter>
+        <button-counter></button-counter>
+        <button-counter></button-counter>
+    </div>
+    <script>
+
+        /**
+         * 为了能在模板中使用，组件必须先注册以便 Vue 能够识别。
+         * 这里有两种组件的注册类型：全局注册和局部注册。
+         * Vue.component 是全局注册。
+         * 
+         * 全局注册的组件可以用在其被注册之后的任何 (通过 new Vue) 新创建的 Vue 根实例，
+         * 也包括其组件树中的所有子组件的模板中。
+         */
+        Vue.component('button-counter', {
+            /**
+             * 一个组件的 data 选项必须是一个函数，因此每个实例可以维护一份被返回对象的独立的拷贝。
+             * 就如上面例子，使用来三次自定义组件按钮，每个按钮的自增都是独立的。
+             */
+            data: function () {
+                return {
+                    count: 0
+                }
+            },
+            template: '<button v-on:click="count++">点击来 {{ count }} 次</button>'
+        })
+
+        new Vue({
+            el: '#components-demo',
+            data: {
+
+            }
+        })
+    </script>
+    <hr>
+
+    <div id="blog">
+        <!-- 可以像这样的将数据作为一个自定义的 attribute 传递进来 -->
+        <blog-post title="标题一"></blog-post>
+        <blog-post title="标题二"></blog-post>
+        <blog-post title="标题三"></blog-post>
+
+        <!-- 
+            而在典型的应用中，数据可能在 Vue 的 data 中，
+            可以使用 v-bind 来动态传递 prop
+        -->
+        <blog-post v-for="post in posts" v-bind:key="post.id" v-bind:title="post.title"></blog-post>
+    </div>
+    <script>
+        /** 
+         * 早些时候，我们提到了创建一个博文组件的事情。
+         * 问题是如果你不能向这个组件传递某一篇博文的标题或内容之类的我们想展示的数据的话，它是没有办法使用的。
+         * 
+         * 这也正是 prop 的由来。
+         * 
+         * Prop 是你可以在组件上注册的一些自定义 attribute。
+         * 当一个值传递给一个 prop attribute 的时候，它就变成了那个组件实例的一个 property。
+         * 为了给博文组件传递一个标题，我们可以用一个 props 选项将其包含在该组件可接受的 prop 列表中。
+         */
+        Vue.component('blog-post', {
+            props: ['title'],
+            template: '<h3>{{ title }}</h3>'
+            /**
+             *  如果在 template 中设置多个并列的元素：
+             *      '<h3>{{ title }}</h3>
+             *      <div v-html="content"></div>'
+             *  Vue 会显示一个错误：
+             *  every component must have a single root element (每个组件必须只有一个根元素)
+             *  
+             *  可以把模板内容包裹在一个父元素内，来修复这个问题：
+             *  <div class="blog-post">
+             *   <h3>{{ title }}</h3>
+             *   <div v-html="content"></div>
+             *  </div>
+             */
+        })
+
+        new Vue({
+            el: '#blog',
+            data: {
+                posts: [
+                    { id: 1, title: 'My journey with Vue', content: '....content1' },
+                    { id: 2, title: 'Blogging with Vue', content: '....content2' },
+                    { id: 3, title: 'Why Vue is so fun', content: '....content3' }
+                ]
+            }
+        })
+    </script>
+    <hr>
+
+    <!-- 
+        监听自组件事件：
+
+        当有多个 attribute 要传入自定义组件时，可以采用传入对象形式，在内部直接可以用 obj.attr 引用。
+
+        父组件监听自定义事件 enlarge-text，有了这个监听器，父组件就可以接收该事件并更新 postFontSize:
+            v-on:enlarge-text="postFontSize += $event"
+        或处理函数：
+            v-on:enlarge-text="onEnlargeText"
+    -->
+    <div id="post-blog-demo">
+        <div :style="{ fontSize: postFontSize + 'em' }">
+            <blog-post-demo v-for="post in posts" v-bind:key="post.id" v-bind:blog="post"
+                v-on:enlarge-text="onEnlargeText"></blog-post-demo>
+        </div>
+    </div>
+    <script>
+
+        /**
+         * 当点击自定义组件中的按钮时，我们需要告诉父级组件放大所有博文的文本。
+         * 幸好 Vue 实例提供了一个自定义事件的系统来解决这个问题。
+         * 父级组件可以像处理 native DOM 事件一样通过 v-on 监听子组件实例的任意事件。
+         * 
+         * 本例中：
+         *  父组件中通过 v-on 监听自定义组件 enlarge-text，
+         *  同时子组件可以通过调用内建的 $emit 方法并传入这个事件名称（enlarge-text）来触发它。
+         *  
+         * 用一个事件抛出一个值，比如这里，<button> 的 click 事件抛出一个值给父组件，
+         * 父级组件监听这个事件的时候，我们可以通过 $event 访问到被抛出的这个值，
+         * 或者通过一个方法，接收这个值。
+         */
+        Vue.component('blog-post-demo', {
+            props: ['blog'],
+            template: '\
+                <div>\
+                    <h3>{{ blog.title}}</h3>\
+                    <button v-on:click="$emit(\'enlarge-text\', 0.1)">\
+                        点击变大文本\
+                    </button>\
+                    <div v-html="blog.content"></div>\
+                </div>'
+        })
+
+        new Vue({
+            el: '#post-blog-demo',
+            data: {
+                postFontSize: 1,
+                posts: [
+                    { id: 1, title: 'My journey with Vue', content: '<p>....content1</p>' },
+                    { id: 2, title: 'Blogging with Vue', content: '<p>....content2</p>' },
+                    { id: 3, title: 'Why Vue is so fun', content: '<p>....content3</p>' }
+                ]
+            },
+            methods: {
+                // 这个方法的第一个参数接受自定义组件抛出的值
+                onEnlargeText: function (enlargeAmount) {
+                    this.postFontSize += enlargeAmount
+                }
+            }
+        })
+    </script>
+    <hr>
+
+    <!--
+        在组件上使用 v-model进行数据绑定，
+        等级与 v-bind:value + v-on:input:
+        1. 将其 value attribute 绑定到一个名叫 value 的 prop 上
+        2. 在其 input 事件被触发时，将新的值通过自定义的 input 事件抛出
+    -->
+    <div id="model-demo">
+        使用 v-model 双向绑定：<input v-model="searchText"> <br>
+        使用 v-bind:value 和 v-on:input 双向绑定：
+        <input v-bind:value="searchText" v-on:input="searchText = $event.target.value"><br>
+
+        自定义组件使用 v-bind 和 v-on 双向绑定：
+        <custom-input v-bind:value="searchText" v-on:input="searchText = $event"></custom-input><br>
+        自定义组件通过 v-model 双向绑定：<custom-input v-model="searchText"></custom-input>
+    </div>
+    <script>
+        // 自定义组件双向绑定：可接受外部的值(prop)，可把自己的值抛出去($emit('外部监听的事件名称'))
+        Vue.component('custom-input', {
+            props: ['value'],
+            template: '<input\
+                         v-bind:value="value"\
+                         v-on:input="$emit(\'input\', $event.target.value)"\
+                     >'
+        })
+
+        var app = new Vue({
+            el: '#model-demo',
+            data: {
+                searchText: ''
+            }
+        })
+    </script>
+    <hr>
+
+
+    <!-- 
+        通过插槽 <slot> 分发内容
+    -->
+    <div id="slot-demo">
+        <alert-box>
+            Something bad happened.
+        </alert-box>
+    </div>
+    <script>
+        /**
+         * 我们只要在需要的地方加入插槽，就可以把自定义组件的内容传入。
+         */
+        Vue.component('alert-box', {
+            template: `
+                <div class="demo-alert-box">
+                    <strong>Error!</strong>
+                    <slot></slot>
+                </div>
+            `
+        })
+
+        var app = new Vue({
+            el: '#slot-demo',
+            data: {
+
+            }
+        })
+    </script>
+    <style>
+        .demo-alert-box {
+            padding: 10px 20px;
+            background: #f3beb8;
+            border: 1px solid #f09898;
         }
-    })
-</script>
+    </style>
+    <hr>
+
+    <!--
+        动态组件
+        有的时候，在不同组件之间进行动态切换是非常有用的，
+        可以通过 Vue 的 <component> 元素加一个特殊的 is attribute 来实现。
+    -->
+    <div id="dynamic-component-demo">
+        <button 
+            v-for="tab in tabs"
+            v-bind:key="tab"
+            v-bind:class="[tab-button, {active: currentTab === tab}]"
+            v-on:click="currentTab = tab"
+        >
+            {{ tab }}
+        </button>
+        <!-- 组件会在 `currentTabComponent` 改变时改变 -->
+        <component v-bind:is="currentTabComponent" class="tab"></component>
+    </div>
+    <script>
+        // 这三个自定义组件会根据 <component> 的 is 属性值而引用显示
+        Vue.component("tab-home", {
+          template: "<div>Home component</div>"
+        });
+        Vue.component("tab-posts", {
+          template: "<div>Posts component</div>"
+        });
+        Vue.component("tab-archive", {
+          template: "<div>Archive component</div>"
+        });
+  
+        var app = new Vue({
+          el: "#dynamic-component-demo",
+          data: {
+            currentTab: 'Home',
+            tabs: ['Home', 'Posts', 'Archive']
+          },
+          computed: {
+            currentTabComponent: function() {
+                return "tab-" + this.currentTab.toLowerCase()
+            }
+          }
+        });
+    </script>
+    <style>
+        .tab-button {
+          padding: 6px 10px;
+          border-top-left-radius: 3px;
+          border-top-right-radius: 3px;
+          border: 1px solid #ccc;
+          cursor: pointer;
+          background: #f0f0f0;
+          margin-bottom: -1px;
+          margin-right: -1px;
+        }
+        .tab-button:hover {
+          background: #e0e0e0;
+        }
+        .tab-button.active {
+          background: #e0e0e0;
+        }
+        .tab {
+          border: 1px solid #ccc;
+          padding: 10px;
+        }
+      </style>
+    <hr>
+
+
+    <!--
+        解析 DOM 模板时的注意事项
+        有些 HTML 元素，诸如 <ul>、<ol>、<table> 和 <select>，对于哪些元素可以出现在其内部是有严格限制的。
+        而有些元素，诸如 <li>、<tr> 和 <option>，只能出现在其它某些特定的元素内部。
+
+        这会导致我们使用这些有约束条件的元素时遇到一些问题。例如我们使用自定义组件 <blog-post-row> 时，
+        这个自定义组件 <blog-post-row> 会被作为无效的内容提升到外部，并导致最终渲染结果出错。
+        幸好这个特殊的 is attribute 给了我们一个变通的办法： is="blog-post-row>"
+
+        需要注意的是如果我们从以下来源使用模板的话，这条限制是不存在的：
+            字符串 (例如：template: '...')
+            单文件组件 (.vue)
+            <script type="text/x-template">
+    -->
+    <div id="blog-post-row">
+        <table class="blog-post-row">
+            <!-- 不能用这样的方式使用有严格限制的元素 -->
+            <!-- <blog-post-row></blog-post-row> -->
+
+            <!-- 在有严格限制限制的元素，应该这样用自定义元素 -->
+            <tr is="blog-post-row"></tr>
+        </table>
+    </div>
+    <script>
+        Vue.component('blog-post-row', {
+            template: `
+                <tr>
+                    <td>小明</td>
+                    <td>3岁</td>
+                </tr>
+            `
+        })
+        var app = new Vue({
+            el: '#blog-post-row',
+            data: {
+
+            }
+        })
+    </script>
+    <style>
+        .blog-post-row tr td {
+            padding: 10px 20px;
+            background: #f3beb8;
+            border: 1px solid #f09898;
+            border-collapse: collapse;
+        }
+    </style>
+</body>
+
 
 </html>
